@@ -15,6 +15,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.util.Map;
+import java.util.HashMap;
 
 import java.util.Optional;
 
@@ -41,8 +43,11 @@ public class LoginService {
         String hashPassword = Helper.hashToken(request.getPassword());
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String token = jwtTokenProvider.generateToken(authentication);
         User userInfo = userRepository.findByUsername(request.getUsername()).get();
+        Map<String, String> claims = new HashMap<>();
+        claims.put("username", request.getUsername());
+        claims.put("email", userInfo.getEmail());
+        String token = jwtTokenProvider.generateToken(authentication, claims);
         LoginResponse loginResponse = new LoginResponse();
         loginResponse.setFirstName(userInfo.getFirstName());
         loginResponse.setLastName(userInfo.getLastName());
@@ -52,7 +57,6 @@ public class LoginService {
 
 
     public void userAdd(UserAddRequest request){
-        System.out.println("Here");
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
@@ -66,6 +70,26 @@ public class LoginService {
         if(request.getWhatsAppId() != null || !request.getWhatsAppId().isEmpty()){
             user.setWhatsappId(request.getWhatsAppId());
         }
+        userRepository.save(user);
+    }
+
+    public void editUser(UserAddRequest request){
+        User user = new User();
+        user.setEmail(request.getEmail());
+        user.setPhone(request.getPhone());
+        user.setUsername(request.getUsername());
+        user.setPassword(bCryptPasswordEncoder.encode(request.getPassword()));
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        if(request.getTelegramId() != null || !request.getTelegramId().isEmpty()){
+            user.setTelegramId(request.getTelegramId());
+        }
+        if(request.getWhatsAppId() != null || !request.getWhatsAppId().isEmpty()){
+            user.setWhatsappId(request.getWhatsAppId());
+        }
+
+        User userData = userRepository.findByEmail(request.getEmail()).get();
+        userRepository.deleteById(userData.getId());
         userRepository.save(user);
     }
 }

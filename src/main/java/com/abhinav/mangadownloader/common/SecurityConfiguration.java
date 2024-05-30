@@ -39,7 +39,6 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        System.out.println("Http : "+ http.toString());
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/login", "/user-add").permitAll()
                 .anyRequest().authenticated()).csrf(AbstractHttpConfigurer::disable);
@@ -50,7 +49,6 @@ public class SecurityConfiguration {
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-        System.out.println("authenticationManager");
         return authConfig.getAuthenticationManager();
     }
 }

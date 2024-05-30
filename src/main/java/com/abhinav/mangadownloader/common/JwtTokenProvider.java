@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.Map;
 
 @Component
 public class JwtTokenProvider {
@@ -20,12 +21,12 @@ public class JwtTokenProvider {
 
     private final long jwtExpirationDate = 604800000;
 
-    public String generateToken(Authentication authentication) {
+    public String generateToken(Authentication authentication, Map<String, String> claims) {
         String username = authentication.getName();
 
         Date expirationDate = new Date(new Date().getTime() + jwtExpirationDate);
 
-        return Jwts.builder().setSubject(username).setIssuedAt(new Date())
+        return Jwts.builder().setSubject(username).setClaims(claims).setIssuedAt(new Date())
                 .setExpiration(expirationDate).signWith(key()).compact();
     }
 
@@ -42,7 +43,7 @@ public class JwtTokenProvider {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        return claims.getSubject();
+        return (String) claims.get("username");
     }
 
     public boolean validateToken(String token){
